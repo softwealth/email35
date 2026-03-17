@@ -28,16 +28,28 @@ export async function getUser(username) {
 export async function setUser(username, userData) {
   const store = usersStore();
   const key = username.toLowerCase();
+  // Merge with existing data to preserve fields like accessKey
+  const existing = (await store.get(key, { type: "json" })) || {};
   const record = {
+    ...existing,
     username: key,
-    forwardTo: userData.forwardTo,
-    walletAddress: userData.walletAddress || "",
-    price: userData.price || 0.5,
-    createdAt: userData.createdAt || new Date().toISOString(),
+    ...userData,
+    createdAt: existing.createdAt || userData.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
   await store.setJSON(key, record);
   return record;
+}
+
+export async function listAllUsers() {
+  const store = usersStore();
+  const { blobs } = await store.list();
+  const users = [];
+  for (const blob of blobs) {
+    const user = await store.get(blob.key, { type: "json" });
+    if (user) users.push(user);
+  }
+  return users;
 }
 
 // --- Pending email operations ---
