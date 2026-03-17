@@ -12,12 +12,22 @@ export default async function handler(request) {
   }
 
   try {
-    const { username } = await request.json();
-    if (!username) {
-      return corsResponse({ error: "Username required" }, 400);
+    const { username, email } = await request.json();
+    
+    let user = null;
+    
+    if (username) {
+      // Lookup by username
+      user = await getUser(username.toLowerCase());
+    } else if (email) {
+      // Lookup by forwarding email — search all users
+      const { listAllUsers } = await import("./utils/store.js");
+      const allUsers = await listAllUsers();
+      user = allUsers.find(u => u.forwardTo && u.forwardTo.toLowerCase() === email.toLowerCase());
+    } else {
+      return corsResponse({ error: "Email or username required" }, 400);
     }
 
-    const user = await getUser(username.toLowerCase());
     if (!user || !user.forwardTo) {
       // Don't reveal if user exists
       return corsResponse({ success: true, message: "If that account exists, a recovery link was sent." });
