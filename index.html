@@ -168,7 +168,7 @@ footer a{color:var(--cyan-dim)}
   <div class="hero-badge">Spam-free email on Base</div>
   <h1>Your inbox,<br><span class="hl">spam-free.</span><br>Every email costs a penny.</h1>
   <p>Get an @email35.com address where senders pay $0.01 to reach you. Spam becomes economically impossible. You get paid for your attention.</p>
-  <button class="hero-cta" onclick="showPage('dashboard')">Get Your Address →</button>
+  <button class="hero-cta" onclick="showPage('signup')">Get Your Address →</button>
 </div>
 
 <div class="steps">
@@ -221,6 +221,51 @@ footer a{color:var(--cyan-dim)}
   </div>
 </div>
 
+</div>
+
+<!-- ==================== SIGNUP PAGE ==================== -->
+<div class="page" id="page-signup">
+<div class="pay-card" style="margin-top:120px">
+  <div class="pay-header">
+    <h2>🔐 Get Your Email35 Address</h2>
+    <p>Set up in 30 seconds. Free forever.</p>
+  </div>
+  <div style="padding:24px">
+    <div class="setting">
+      <label>Choose Your Username</label>
+      <div style="display:flex;align-items:center;gap:0">
+        <input type="text" id="signupUsername" placeholder="yourname" style="border-radius:6px 0 0 6px;border-right:none" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9]/g,'')">
+        <div style="padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:0 6px 6px 0;font-family:var(--mono);font-size:.9rem;color:var(--muted);white-space:nowrap">@email35.com</div>
+      </div>
+    </div>
+    <div class="setting">
+      <label>Forward Paid Emails To</label>
+      <input type="email" id="signupForward" placeholder="your-real-email@gmail.com">
+    </div>
+    <div class="setting">
+      <label>Your Wallet Address (for receiving USDC payments)</label>
+      <input type="text" id="signupWallet" placeholder="0x... (Base network)">
+    </div>
+    <div class="setting">
+      <label>Price Per Email</label>
+      <select id="signupPrice">
+        <option value="10000" selected>$0.01 — Penny per email (recommended)</option>
+        <option value="50000">$0.05 — Nickel per email</option>
+        <option value="100000">$0.10 — Dime per email</option>
+        <option value="500000">$0.50 — Premium inbox</option>
+        <option value="1000000">$1.00 — VIP only</option>
+      </select>
+    </div>
+    <div id="signupError" style="color:var(--red);font-size:.85rem;margin-bottom:12px;display:none"></div>
+    <div id="signupSuccess" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎉</div>
+      <div style="font-size:1.2rem;font-weight:700;color:var(--cyan);margin-bottom:4px" id="signupResultEmail"></div>
+      <div style="color:var(--muted);font-size:.9rem;margin-bottom:16px">Your spam-free inbox is live!</div>
+      <button class="hero-cta" style="width:100%;font-size:.9rem" onclick="showPage('dashboard');loadPending(localStorage.getItem('email35_user'))">Go to Dashboard →</button>
+    </div>
+    <button class="hero-cta" style="width:100%;font-size:.9rem" id="signupBtn" onclick="doSignup()">Create My Address</button>
+  </div>
+</div>
 </div>
 
 <!-- ==================== PAYMENT PAGE ==================== -->
@@ -445,6 +490,46 @@ async function payCrypto() {
   } catch(e) {
     alert('Payment failed: ' + (e.message || e));
   }
+}
+
+// ─── SIGNUP ───
+async function doSignup() {
+  const username = document.getElementById('signupUsername').value.trim();
+  const forwardTo = document.getElementById('signupForward').value.trim();
+  const wallet = document.getElementById('signupWallet').value.trim();
+  const price = parseInt(document.getElementById('signupPrice').value);
+  const errEl = document.getElementById('signupError');
+  errEl.style.display = 'none';
+
+  if (!username || username.length < 2) { errEl.textContent = 'Username must be at least 2 characters'; errEl.style.display = 'block'; return; }
+  if (!forwardTo || !forwardTo.includes('@')) { errEl.textContent = 'Enter a valid forwarding email'; errEl.style.display = 'block'; return; }
+  if (!wallet || !wallet.startsWith('0x')) { errEl.textContent = 'Enter a valid wallet address (0x...)'; errEl.style.display = 'block'; return; }
+
+  document.getElementById('signupBtn').disabled = true;
+  document.getElementById('signupBtn').textContent = 'Creating...';
+
+  try {
+    const resp = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, forwardTo, walletAddress: wallet, price})
+    });
+    const data = await resp.json();
+    if (data.success) {
+      localStorage.setItem('email35_user', username);
+      document.getElementById('signupBtn').style.display = 'none';
+      document.getElementById('signupSuccess').style.display = 'block';
+      document.getElementById('signupResultEmail').textContent = username + '@email35.com';
+    } else {
+      errEl.textContent = data.error || 'Registration failed';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Network error — try again';
+    errEl.style.display = 'block';
+  }
+  document.getElementById('signupBtn').disabled = false;
+  document.getElementById('signupBtn').textContent = 'Create My Address';
 }
 
 // ─── API INTEGRATION ───
