@@ -315,20 +315,19 @@ footer a{color:var(--cyan-dim)}
 
   <!-- WHITELIST -->
   <div class="dash-panel" id="panel-whitelist">
-    <div class="wl-item"><span class="wl-addr">*@github.com</span><span class="wl-remove" onclick="this.closest('.wl-item').remove()">remove</span></div>
-    <div class="wl-item"><span class="wl-addr">mom@gmail.com</span><span class="wl-remove" onclick="this.closest('.wl-item').remove()">remove</span></div>
-    <div class="wl-item"><span class="wl-addr">*@mycompany.com</span><span class="wl-remove" onclick="this.closest('.wl-item').remove()">remove</span></div>
+    <div id="wlList"></div>
     <div class="wl-add">
       <input type="text" placeholder="sender@domain.com or *@domain.com" id="wlInput">
       <button onclick="addWhitelist()">Add</button>
     </div>
+    <div style="font-size:.75rem;color:var(--dim);margin-top:8px">Whitelisted senders skip payment. Use *@domain.com to whitelist an entire domain.</div>
   </div>
 
   <!-- SETTINGS -->
   <div class="dash-panel" id="panel-settings">
     <div class="setting">
       <label>Your Email35 Address</label>
-      <input type="text" value="brian@email35.com" readonly style="color:var(--cyan)">
+      <input type="text" id="settingsEmail" readonly style="color:var(--cyan)">
     </div>
     <div class="setting">
       <label>Forward Paid Emails To</label>
@@ -361,24 +360,9 @@ footer a{color:var(--cyan-dim)}
 
   <!-- EARNINGS -->
   <div class="dash-panel" id="panel-earnings">
-    <div class="earnings-total">$0.04</div>
+    <div class="earnings-total">$0.00</div>
     <div class="earnings-label">Total earned (all time)</div>
-    <div class="earning-item">
-      <div><div class="earning-from">john@bigco.com</div><div class="earning-time">Today, 2:34 PM</div></div>
-      <div class="earning-amount">+$0.01</div>
-    </div>
-    <div class="earning-item">
-      <div><div class="earning-from">recruiter@techfirm.io</div><div class="earning-time">Today, 11:20 AM</div></div>
-      <div class="earning-amount">+$0.01</div>
-    </div>
-    <div class="earning-item">
-      <div><div class="earning-from">alice@startup.xyz</div><div class="earning-time">Yesterday, 4:15 PM</div></div>
-      <div class="earning-amount">+$0.01</div>
-    </div>
-    <div class="earning-item">
-      <div><div class="earning-from">press@techcrunch.com</div><div class="earning-time">Yesterday, 9:02 AM</div></div>
-      <div class="earning-amount">+$0.01</div>
-    </div>
+    <div class="empty">Earnings will appear here when senders pay to deliver emails.</div>
   </div>
 
 </div>
@@ -399,6 +383,7 @@ function showPage(page) {
     const user = localStorage.getItem('email35_user');
     if (!user) { showPage('signup'); return; }
     document.getElementById('dashEmail').textContent = user + '@email35.com';
+    document.getElementById('settingsEmail').value = user + '@email35.com';
     loadPending(user);
   }
 }
