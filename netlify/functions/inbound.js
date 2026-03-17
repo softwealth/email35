@@ -46,8 +46,23 @@ export default async function handler(request) {
     // Resend format: data.from, data.to, data.subject, data.text, data.html
     const rawFrom = emailData.from || emailData.envelope?.from || emailData.sender || "";
     const rawTo = emailData.to || emailData.envelope?.to?.[0] || emailData.recipient || "";
-    const from = typeof rawFrom === "object" ? rawFrom.email || rawFrom.address || "" : rawFrom;
-    const to = typeof rawTo === "object" ? rawTo.email || rawTo.address || "" : (Array.isArray(rawTo) ? (rawTo[0]?.email || rawTo[0] || "") : rawTo);
+    
+    // Parse from: could be string, object {email}, or "Name <email>"
+    let from = "";
+    if (typeof rawFrom === "string") from = rawFrom;
+    else if (rawFrom?.email) from = rawFrom.email;
+    else if (rawFrom?.address) from = rawFrom.address;
+    
+    // Parse to: could be string, array of strings, array of objects, or object
+    let to = "";
+    if (typeof rawTo === "string") to = rawTo;
+    else if (Array.isArray(rawTo)) {
+      const first = rawTo[0];
+      if (typeof first === "string") to = first;
+      else if (first?.email) to = first.email;
+      else if (first?.address) to = first.address;
+    } else if (rawTo?.email) to = rawTo.email;
+    else if (rawTo?.address) to = rawTo.address;
     const subject = emailData.subject || "(no subject)";
     const emailBody = emailData.text || emailData.body || emailData.html || "";
     const headers = emailData.headers || {};
