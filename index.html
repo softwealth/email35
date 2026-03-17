@@ -347,7 +347,15 @@ footer a{color:var(--cyan-dim)}
       <label>Payment Wallet (receives USDC)</label>
       <input type="text" placeholder="0x..." id="walletInput">
     </div>
-    <button class="hero-cta" style="width:100%;margin-top:12px;font-size:.9rem">Save Settings</button>
+    <div id="settingsMsg" style="display:none;margin-top:12px;padding:10px;border-radius:6px;font-size:.85rem;text-align:center"></div>
+    <button class="hero-cta" style="width:100%;margin-top:12px;font-size:.9rem" onclick="saveSettings()">Save Settings</button>
+    <div style="margin-top:20px;padding:16px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:8px">
+      <div style="font-size:.8rem;color:var(--cyan);font-weight:600;margin-bottom:6px">💡 How payments work</div>
+      <div style="font-size:.8rem;color:var(--muted);line-height:1.5">
+        <b>Crypto ($0.01):</b> USDC sent directly to your wallet. You keep 95%.<br>
+        <b>Card ($0.50):</b> Paid via Stripe. Revenue goes to the platform as a convenience fee. Tell senders to pay with crypto — it's cheaper for them and you earn directly!
+      </div>
+    </div>
   </div>
 
   <!-- EARNINGS -->
@@ -456,6 +464,44 @@ async function payCrypto() {
     document.getElementById('paySuccess').style.display = 'block';
   } catch(e) {
     alert('Payment failed: ' + (e.message || e));
+  }
+}
+
+// ─── SETTINGS ───
+async function saveSettings() {
+  const user = localStorage.getItem('email35_user');
+  const key = localStorage.getItem('email35_key');
+  if (!user) { alert('Not logged in'); return; }
+
+  const wallet = document.getElementById('walletInput').value.trim();
+  const forward = document.querySelector('#panel-settings input[type="email"]').value.trim();
+  const priceSelect = document.querySelector('#panel-settings select');
+  const price = priceSelect ? parseInt(priceSelect.value) : undefined;
+
+  const msgEl = document.getElementById('settingsMsg');
+  try {
+    const resp = await fetch('/api/settings', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: user, key, walletAddress: wallet || undefined, forwardTo: forward || undefined, price})
+    });
+    const data = await resp.json();
+    if (data.success) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = 'rgba(0,255,136,.1)';
+      msgEl.style.color = 'var(--green)';
+      msgEl.textContent = '✓ Settings saved!';
+    } else {
+      msgEl.style.display = 'block';
+      msgEl.style.background = 'rgba(255,68,102,.1)';
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = data.error || 'Failed to save';
+    }
+    setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Network error';
   }
 }
 
