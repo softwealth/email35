@@ -1,0 +1,57 @@
+[build]
+  publish = "."
+  command = ""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# API redirects — route /api/* to serverless functions
+[[redirects]]
+  from = "/api/register"
+  to = "/.netlify/functions/register"
+  status = 200
+
+[[redirects]]
+  from = "/api/pending"
+  to = "/.netlify/functions/pending"
+  status = 200
+
+[[redirects]]
+  from = "/api/action"
+  to = "/.netlify/functions/action"
+  status = 200
+
+[[redirects]]
+  from = "/api/inbound"
+  to = "/.netlify/functions/inbound"
+  status = 200
+
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/pay"
+  to = "/.netlify/functions/pay"
+  status = 200
+
+[[redirects]]
+  from = "/api/lookup"
+  to = "/.netlify/functions/lookup"
+  status = 200
+
+# SPA fallback — all other routes serve index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"

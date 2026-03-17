@@ -447,10 +447,73 @@ async function payCrypto() {
   }
 }
 
+// ─── API INTEGRATION ───
+const API = '';  // same origin
+
+async function loadPending(user) {
+  try {
+    const resp = await fetch(`${API}/api/pending?user=${user}`);
+    const data = await resp.json();
+    const container = document.getElementById('panel-pending');
+    if (!data.emails || data.emails.length === 0) {
+      container.innerHTML = '<div class="empty">No pending emails. Your inbox is clean! 🎉</div>';
+      return;
+    }
+    container.innerHTML = data.emails.map(e => `
+      <div class="pending-item" data-id="${e.id}">
+        <div class="pending-from">${e.from}</div>
+        <div class="pending-subject">${e.subject}</div>
+        <div class="pending-time">${new Date(e.createdAt).toLocaleString()}</div>
+        <div class="pending-actions">
+          <button class="pending-btn allow" onclick="doAction('${e.id}','allow')">✓ Allow Once</button>
+          <button class="pending-btn wl" onclick="doAction('${e.id}','whitelist')">+ Whitelist</button>
+          <button class="pending-btn block" onclick="doAction('${e.id}','block')">✕ Block</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Failed to load pending', e); }
+}
+
+async function doAction(emailId, action) {
+  const user = localStorage.getItem('email35_user') || 'brian';
+  try {
+    await fetch(`${API}/api/action`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({emailId, action, user})
+    });
+    const el = document.querySelector(`[data-id="${emailId}"]`);
+    if (el) el.remove();
+  } catch(e) { console.error('Action failed', e); }
+}
+
+async function loadPaymentPage(emailId) {
+  try {
+    const resp = await fetch(`${API}/api/lookup?id=${emailId}`);
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('payFrom').textContent = data.from;
+      document.getElementById('payTo').textContent = data.to;
+      document.getElementById('paySubject').textContent = data.subject;
+      document.getElementById('payBody').textContent = data.preview || '';
+      // Update crypto payment with real wallet
+      window._payWallet = data.walletAddress;
+      window._payEmailId = emailId;
+    }
+  } catch(e) { console.error('Failed to load payment info', e); }
+}
+
 // Route handling
 const params = new URLSearchParams(window.location.search);
-if (params.get('page') === 'pay') showPage('pay');
-if (params.get('page') === 'dashboard') showPage('dashboard');
+if (params.get('page') === 'pay') {
+  showPage('pay');
+  if (params.get('id')) loadPaymentPage(params.get('id'));
+}
+if (params.get('page') === 'dashboard') {
+  showPage('dashboard');
+  const user = localStorage.getItem('email35_user') || 'brian';
+  loadPending(user);
+}
 </script>
 </body>
 </html>
