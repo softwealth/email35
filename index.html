@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Email35 — Your inbox, spam-free. Every email costs a penny.</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a0f;--card:#12121e;--card2:#181828;--border:#1e1e3a;--border2:#2a2a5a;--text:#e0e0f0;--muted:#666;--dim:#444;--cyan:#00d4ff;--cyan-dim:#0099bb;--cyan-glow:rgba(0,212,255,.12);--purple:#7b61ff;--green:#00ff88;--red:#ff4466;--mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
@@ -150,7 +151,7 @@ footer a{color:var(--cyan-dim)}
 <!-- NAV -->
 <nav>
 <div class="nav-inner">
-  <div class="logo">EMAIL<span>35</span></div>
+  <div class="logo" onclick="showPage('landing')" style="cursor:pointer;display:flex;align-items:center;gap:10px"><svg viewBox="0 0 64 64" width="32" height="32"><circle cx="32" cy="32" r="26" fill="none" stroke="#555" stroke-width="2.5"/><text x="32" y="38" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="28" fill="#00d4ff">35</text></svg>EMAIL<span>35</span></div>
   <div class="nav-links">
     <a href="#" onclick="showPage('landing')">home</a>
     <a href="#" onclick="showPage('dashboard')">dashboard</a>
