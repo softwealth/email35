@@ -39,12 +39,18 @@ export default async function handler(request) {
   try {
     const body = await request.json();
 
-    // Support multiple webhook formats (SendGrid, Resend, generic)
-    const from = body.from || body.envelope?.from || body.sender || "";
-    const to = body.to || body.envelope?.to?.[0] || body.recipient || "";
-    const subject = body.subject || "(no subject)";
-    const emailBody = body.text || body.body || body.html || "";
-    const headers = body.headers || {};
+    // Resend webhook wraps data in { type, created_at, data: { ... } }
+    const emailData = body.data || body;
+
+    // Support multiple webhook formats (Resend, SendGrid, generic)
+    // Resend format: data.from, data.to, data.subject, data.text, data.html
+    const rawFrom = emailData.from || emailData.envelope?.from || emailData.sender || "";
+    const rawTo = emailData.to || emailData.envelope?.to?.[0] || emailData.recipient || "";
+    const from = typeof rawFrom === "object" ? rawFrom.email || rawFrom.address || "" : rawFrom;
+    const to = typeof rawTo === "object" ? rawTo.email || rawTo.address || "" : (Array.isArray(rawTo) ? (rawTo[0]?.email || rawTo[0] || "") : rawTo);
+    const subject = emailData.subject || "(no subject)";
+    const emailBody = emailData.text || emailData.body || emailData.html || "";
+    const headers = emailData.headers || {};
 
     if (!from || !to) {
       return corsResponse({ error: "Missing from/to fields" }, 400);
