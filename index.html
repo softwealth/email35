@@ -333,7 +333,10 @@ footer a{color:var(--cyan-dim)}
 
   <!-- PENDING -->
   <div class="dash-panel active" id="panel-pending">
-    <div class="empty">Loading pending emails...</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;line-height:1.6">
+      📬 These emails are waiting. Senders already received a payment link — if they pay, the email delivers automatically. You can also deliver for free, always-allow a sender, or block them.
+    </div>
+    <div id="pendingList"><div class="empty">Loading...</div></div>
   </div>
 
   <!-- WHITELIST -->
@@ -593,7 +596,7 @@ async function loadPending(user) {
     const key = localStorage.getItem('email35_key') || new URLSearchParams(window.location.search).get('key') || '';
     const resp = await fetch(`${API}/api/pending?user=${user}&key=${key}`);
     const data = await resp.json();
-    const container = document.getElementById('panel-pending');
+    const container = document.getElementById('pendingList');
     if (!data.emails || data.emails.length === 0) {
       container.innerHTML = '<div class="empty">No pending emails. Your inbox is clean! 🎉</div>';
       return;
@@ -604,9 +607,9 @@ async function loadPending(user) {
         <div class="pending-subject">${e.subject}</div>
         <div class="pending-time">${new Date(e.createdAt).toLocaleString()}</div>
         <div class="pending-actions">
-          <button class="pending-btn allow" onclick="doAction('${e.id}','allow')">✓ Allow Once</button>
-          <button class="pending-btn wl" onclick="doAction('${e.id}','whitelist')">+ Whitelist</button>
-          <button class="pending-btn block" onclick="doAction('${e.id}','block')">✕ Block</button>
+          <button class="pending-btn allow" onclick="doAction('${e.id}','allow')">✓ Deliver Free</button>
+          <button class="pending-btn wl" onclick="doAction('${e.id}','whitelist')">★ Always Allow</button>
+          <button class="pending-btn block" onclick="doAction('${e.id}','block')">✕ Block &amp; Delete</button>
         </div>
       </div>
     `).join('');
