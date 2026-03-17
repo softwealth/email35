@@ -607,9 +607,12 @@ async function loadPending(user) {
         <div class="pending-subject">${e.subject}</div>
         <div class="pending-time">${new Date(e.createdAt).toLocaleString()}</div>
         <div class="pending-actions">
-          <button class="pending-btn allow" onclick="doAction('${e.id}','allow')">✓ Deliver Free</button>
-          <button class="pending-btn wl" onclick="doAction('${e.id}','whitelist')">★ Always Allow</button>
-          <button class="pending-btn block" onclick="doAction('${e.id}','block')">✕ Block &amp; Delete</button>
+          <button class="pending-btn allow" onclick="doAction('${e.id}','allow')" title="Deliver this email for free (one-time, future emails still held)">✓ Deliver Free</button>
+          <button class="pending-btn wl" onclick="doAction('${e.id}','whitelist')" title="Deliver and never hold emails from this sender again">★ Always Allow</button>
+          <button class="pending-btn block" onclick="doAction('${e.id}','block')" title="Delete this email and auto-reject all future emails from this sender">✕ Block &amp; Delete</button>
+        </div>
+        <div style="font-size:.7rem;color:var(--dim);margin-top:6px;line-height:1.5">
+          <b>Deliver Free</b> = one-time, future emails still require payment · <b>Always Allow</b> = whitelist this sender forever · <b>Block &amp; Delete</b> = reject this and all future emails from them
         </div>
       </div>
     `).join('');
