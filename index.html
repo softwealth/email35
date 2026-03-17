@@ -541,7 +541,7 @@ async function doSignup() {
       linkEl.textContent = data.dashboardUrl;
       const noteEl = document.createElement('div');
       noteEl.style.cssText = 'margin-top:8px;font-size:.8rem;color:var(--muted)';
-      noteEl.textContent = '⚠️ Bookmark this link! It\\'s your login to the dashboard from any device.';
+      noteEl.textContent = '⚠️ Bookmark this link — your login to the dashboard from any device.';
       document.getElementById('signupSuccess').appendChild(linkEl);
       document.getElementById('signupSuccess').appendChild(noteEl);
     } else {
