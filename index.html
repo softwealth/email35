@@ -298,7 +298,7 @@ footer a{color:var(--cyan-dim)}
 <div class="page" id="page-dashboard">
 <div class="dash">
   <h2 style="font-size:1.5rem;margin-bottom:4px">Your Dashboard</h2>
-  <p style="color:var(--muted);font-size:.9rem;margin-bottom:24px">you@email35.com</p>
+  <p style="color:var(--muted);font-size:.9rem;margin-bottom:24px" id="dashEmail">Loading...</p>
 
   <div class="dash-tabs">
     <div class="dash-tab active" onclick="showTab(this,'pending')">Pending</div>
@@ -309,46 +309,7 @@ footer a{color:var(--cyan-dim)}
 
   <!-- PENDING -->
   <div class="dash-panel active" id="panel-pending">
-    <div class="pending-item">
-      <div class="pending-from">newsletter@substack.com</div>
-      <div class="pending-subject">Your weekly AI digest is here</div>
-      <div class="pending-time">2 minutes ago</div>
-      <div class="pending-actions">
-        <button class="pending-btn allow" onclick="this.closest('.pending-item').remove()">✓ Allow Once</button>
-        <button class="pending-btn wl" onclick="this.closest('.pending-item').remove()">+ Whitelist</button>
-        <button class="pending-btn block" onclick="this.closest('.pending-item').remove()">✕ Block</button>
-      </div>
-    </div>
-    <div class="pending-item">
-      <div class="pending-from">noreply@github.com</div>
-      <div class="pending-subject">[GitHub] Security alert for your repository</div>
-      <div class="pending-time">15 minutes ago</div>
-      <div class="pending-actions">
-        <button class="pending-btn allow" onclick="this.closest('.pending-item').remove()">✓ Allow Once</button>
-        <button class="pending-btn wl" onclick="this.closest('.pending-item').remove()">+ Whitelist</button>
-        <button class="pending-btn block" onclick="this.closest('.pending-item').remove()">✕ Block</button>
-      </div>
-    </div>
-    <div class="pending-item">
-      <div class="pending-from">marketing@randomstartup.io</div>
-      <div class="pending-subject">🚀 You won't BELIEVE this new AI tool!</div>
-      <div class="pending-time">1 hour ago</div>
-      <div class="pending-actions">
-        <button class="pending-btn allow" onclick="this.closest('.pending-item').remove()">✓ Allow Once</button>
-        <button class="pending-btn wl" onclick="this.closest('.pending-item').remove()">+ Whitelist</button>
-        <button class="pending-btn block" onclick="this.closest('.pending-item').remove()">✕ Block</button>
-      </div>
-    </div>
-    <div class="pending-item">
-      <div class="pending-from">prince.nigerian@totallylegit.com</div>
-      <div class="pending-subject">URGENT: You have inherited $10,000,000 USD</div>
-      <div class="pending-time">3 hours ago</div>
-      <div class="pending-actions">
-        <button class="pending-btn allow" onclick="this.closest('.pending-item').remove()">✓ Allow Once</button>
-        <button class="pending-btn wl" onclick="this.closest('.pending-item').remove()">+ Whitelist</button>
-        <button class="pending-btn block" onclick="this.closest('.pending-item').remove()">✕ Block</button>
-      </div>
-    </div>
+    <div class="empty">Loading pending emails...</div>
   </div>
 
   <!-- WHITELIST -->
@@ -425,6 +386,12 @@ function showPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   window.scrollTo(0, 0);
+  if (page === 'dashboard') {
+    const user = localStorage.getItem('email35_user');
+    if (!user) { showPage('signup'); return; }
+    document.getElementById('dashEmail').textContent = user + '@email35.com';
+    loadPending(user);
+  }
 }
 
 function showTab(el, panel) {
