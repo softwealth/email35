@@ -37,16 +37,22 @@ export default async function handler(request) {
       return corsResponse({ error: "Username already taken" }, 409);
     }
 
+    // Generate access key for dashboard login
+    const accessKey = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+
     // Create user record
     const user = await setUser(usernameClean, {
       forwardTo,
       walletAddress: walletAddress || "",
       price: price || 0.5,
+      accessKey,
     });
 
     return corsResponse({
       success: true,
       email: `${usernameClean}@email35.com`,
+      accessKey,
+      dashboardUrl: `https://email35.com?page=dashboard&user=${usernameClean}&key=${accessKey}`,
       user: {
         username: user.username,
         forwardTo: user.forwardTo,

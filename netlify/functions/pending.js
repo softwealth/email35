@@ -13,6 +13,7 @@ export default async function handler(request) {
   try {
     const url = new URL(request.url);
     const username = url.searchParams.get("user");
+    const key = url.searchParams.get("key");
 
     if (!username) {
       return corsResponse({ error: "Missing ?user= query parameter" }, 400);
@@ -21,6 +22,11 @@ export default async function handler(request) {
     const user = await getUser(username);
     if (!user) {
       return corsResponse({ error: "User not found" }, 404);
+    }
+
+    // Verify access key if user has one set
+    if (user.accessKey && key !== user.accessKey) {
+      return corsResponse({ error: "Invalid access key" }, 403);
     }
 
     const emails = await getPendingEmails(username);

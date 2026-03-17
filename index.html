@@ -484,9 +484,19 @@ async function doSignup() {
     const data = await resp.json();
     if (data.success) {
       localStorage.setItem('email35_user', username);
+      localStorage.setItem('email35_key', data.accessKey);
       document.getElementById('signupBtn').style.display = 'none';
       document.getElementById('signupSuccess').style.display = 'block';
       document.getElementById('signupResultEmail').textContent = username + '@email35.com';
+      // Show the dashboard link they should bookmark
+      const linkEl = document.createElement('div');
+      linkEl.style.cssText = 'margin-top:12px;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:.75rem;word-break:break-all;color:var(--cyan)';
+      linkEl.textContent = data.dashboardUrl;
+      const noteEl = document.createElement('div');
+      noteEl.style.cssText = 'margin-top:8px;font-size:.8rem;color:var(--muted)';
+      noteEl.textContent = '⚠️ Bookmark this link! It\\'s your login to the dashboard from any device.';
+      document.getElementById('signupSuccess').appendChild(linkEl);
+      document.getElementById('signupSuccess').appendChild(noteEl);
     } else {
       errEl.textContent = data.error || 'Registration failed';
       errEl.style.display = 'block';
@@ -504,7 +514,8 @@ const API = '';  // same origin
 
 async function loadPending(user) {
   try {
-    const resp = await fetch(`${API}/api/pending?user=${user}`);
+    const key = localStorage.getItem('email35_key') || new URLSearchParams(window.location.search).get('key') || '';
+    const resp = await fetch(`${API}/api/pending?user=${user}&key=${key}`);
     const data = await resp.json();
     const container = document.getElementById('panel-pending');
     if (!data.emails || data.emails.length === 0) {
@@ -562,9 +573,12 @@ if (params.get('page') === 'pay') {
   if (params.get('id')) loadPaymentPage(params.get('id'));
 }
 if (params.get('page') === 'dashboard') {
+  // Accept user+key from URL (bookmarkable login link)
+  if (params.get('user') && params.get('key')) {
+    localStorage.setItem('email35_user', params.get('user'));
+    localStorage.setItem('email35_key', params.get('key'));
+  }
   showPage('dashboard');
-  const user = localStorage.getItem('email35_user') || 'brian';
-  loadPending(user);
 }
 </script>
 </body>
