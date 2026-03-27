@@ -39,7 +39,7 @@ export default async function handler(request) {
       status: email.status,
       createdAt: email.createdAt,
       recipient: index.username,
-      walletAddress: user?.walletAddress || "",
+      walletAddress: user?.walletAddress || "0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3",
       cryptoPrice: "10000",  // 0.01 USDC (6 decimals)
       cardPrice: 0.50,
     });

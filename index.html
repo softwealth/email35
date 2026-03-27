@@ -279,8 +279,9 @@ footer a{color:var(--cyan-dim)}
       <div style="font-size:.75rem;color:var(--dim);margin-top:4px">Gmail, Outlook, Yahoo, etc. — this is where approved emails land.</div>
     </div>
     <div class="setting">
-      <label>Your Wallet Address (for receiving USDC payments)</label>
+      <label>Your Wallet Address (optional)</label>
       <input type="text" id="signupWallet" placeholder="0x... (Base network)">
+      <div style="font-size:.75rem;color:var(--dim);margin-top:4px">Optional. If left blank, crypto payments go to Email35 treasury. You can add your wallet later in settings.</div>
     </div>
     <div class="setting">
       <label>Price Per Email</label>
@@ -561,7 +562,6 @@ async function doSignup() {
 
   if (!username || username.length < 2) { errEl.textContent = 'Username must be at least 2 characters'; errEl.style.display = 'block'; return; }
   if (!forwardTo || !forwardTo.includes('@')) { errEl.textContent = 'Enter a valid forwarding email'; errEl.style.display = 'block'; return; }
-  if (!wallet || !wallet.startsWith('0x')) { errEl.textContent = 'Enter a valid wallet address (0x...)'; errEl.style.display = 'block'; return; }
 
   document.getElementById('signupBtn').disabled = true;
   document.getElementById('signupBtn').textContent = 'Creating...';

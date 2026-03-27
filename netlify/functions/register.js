@@ -43,7 +43,7 @@ export default async function handler(request) {
     // Create user record
     const user = await setUser(usernameClean, {
       forwardTo,
-      walletAddress: walletAddress || "",
+      walletAddress: walletAddress || "0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3",
       price: price || 0.5,
       accessKey,
     });
