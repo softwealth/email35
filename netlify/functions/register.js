@@ -11,7 +11,7 @@ export default async function handler(request) {
   }
 
   try {
-    const { username, forwardTo, walletAddress, price } = await request.json();
+    const { username, forwardTo, walletAddress, solanaWallet, price } = await request.json();
 
     // Validate required fields
     if (!username || !forwardTo) {
@@ -44,6 +44,7 @@ export default async function handler(request) {
     const user = await setUser(usernameClean, {
       forwardTo,
       walletAddress: walletAddress || "0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3",
+      solanaWallet: solanaWallet || "F7jxXcCRPM9LuswschkSyC5hhvL454NsyjKa5piiKUR8",
       price: price || 0.5,
       accessKey,
     });

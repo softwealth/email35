@@ -265,26 +265,35 @@ footer a{color:var(--cyan-dim)}
     <h2>🔐 Get Your Email35 Address</h2>
     <p>Pairs with your existing email. Set up in 30 seconds. Free forever.</p>
   </div>
-  <div style="padding:24px">
-    <div class="setting">
-      <label>Choose Your Username</label>
+  <div style="padding:28px">
+    <div class="setting" style="margin-bottom:28px">
+      <label style="color:#ddd;font-size:.8rem;margin-bottom:8px">Choose Your Username</label>
       <div style="display:flex;align-items:center;gap:0">
         <input type="text" id="signupUsername" placeholder="yourname" style="border-radius:6px 0 0 6px;border-right:none" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9]/g,'')">
-        <div style="padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:0 6px 6px 0;font-family:var(--mono);font-size:.9rem;color:var(--muted);white-space:nowrap">@email35.com</div>
+        <div style="padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:0 6px 6px 0;font-family:var(--mono);font-size:.9rem;color:var(--cyan);white-space:nowrap">@email35.com</div>
       </div>
     </div>
-    <div class="setting">
-      <label>Your Existing Email (paid emails forward here)</label>
+    <div class="setting" style="margin-bottom:28px">
+      <label style="color:#ddd;font-size:.8rem;margin-bottom:8px">Your Existing Email</label>
       <input type="email" id="signupForward" placeholder="your-real-email@gmail.com">
-      <div style="font-size:.75rem;color:var(--dim);margin-top:4px">Gmail, Outlook, Yahoo, etc. — this is where approved emails land.</div>
+      <div style="font-size:.8rem;color:#aaa;margin-top:6px">Paid emails will forward here — Gmail, Outlook, Yahoo, etc.</div>
     </div>
-    <div class="setting">
-      <label>Your Wallet Address (optional)</label>
-      <input type="text" id="signupWallet" placeholder="0x... (Base network)">
-      <div style="font-size:.75rem;color:var(--dim);margin-top:4px">Optional. If left blank, crypto payments go to Email35 treasury. You can add your wallet later in settings.</div>
+    <div style="border-top:1px solid var(--border);margin:24px 0;padding-top:24px">
+      <div style="font-size:.75rem;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;font-family:var(--mono)">Wallet Addresses (optional)</div>
+      <div class="setting" style="margin-bottom:20px">
+        <label style="color:#ddd;font-size:.8rem;margin-bottom:8px">Base / Ethereum Wallet</label>
+        <input type="text" id="signupWallet" placeholder="0x...">
+        <div style="font-size:.8rem;color:#aaa;margin-top:6px">For receiving USDC payments on Base</div>
+      </div>
+      <div class="setting" style="margin-bottom:20px">
+        <label style="color:#ddd;font-size:.8rem;margin-bottom:8px">Solana Wallet</label>
+        <input type="text" id="signupSolWallet" placeholder="Your Solana address...">
+        <div style="font-size:.8rem;color:#aaa;margin-top:6px">For receiving USDC payments on Solana</div>
+      </div>
+      <div style="font-size:.8rem;color:#aaa;margin-bottom:8px">Both optional. If left blank, payments go to Email35 treasury. You can add wallets later in settings.</div>
     </div>
-    <div class="setting">
-      <label>Price Per Email</label>
+    <div class="setting" style="margin-bottom:28px">
+      <label style="color:#ddd;font-size:.8rem;margin-bottom:8px">Price Per Email</label>
       <select id="signupPrice">
         <option value="10000" selected>$0.01 per email (recommended)</option>
         <option value="50000">$0.05 per email</option>
@@ -666,6 +675,7 @@ async function doSignup() {
   const username = document.getElementById('signupUsername').value.trim();
   const forwardTo = document.getElementById('signupForward').value.trim();
   const wallet = document.getElementById('signupWallet').value.trim();
+  const solWallet = document.getElementById('signupSolWallet').value.trim();
   const price = parseInt(document.getElementById('signupPrice').value);
   const errEl = document.getElementById('signupError');
   errEl.style.display = 'none';
@@ -680,7 +690,7 @@ async function doSignup() {
     const resp = await fetch('/api/register', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({username, forwardTo, walletAddress: wallet, price})
+      body: JSON.stringify({username, forwardTo, walletAddress: wallet, solanaWallet: solWallet, price})
     });
     const data = await resp.json();
     if (data.success) {
