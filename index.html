@@ -448,22 +448,113 @@ function addWhitelist() {
 
 async function payCrypto(chain) {
   if (chain === 'solana') {
-    // Solana payment via Phantom/Solflare
-    if (!window.solana || !window.solana.isPhantom) {
-      alert('Please install Phantom wallet (phantom.app) to pay with Solana.');
-      return;
-    }
-    try {
-      await window.solana.connect();
-      // For Solana USDC SPL transfer, we need @solana/web3.js
-      // Simplified: open a Solana Pay URL
-      const recipient = window._payWallet || '0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3';
-      // TODO: Implement full SPL token transfer
-      // For now, show instructions
-      alert('Solana payments coming soon! For now, send 0.01 USDC (SPL) on Solana to the recipient wallet shown on this page. Then contact us to confirm delivery.');
-      return;
-    } catch(e) {
-      alert('Solana payment failed: ' + (e.message || e));
+    const SOLANA_TREASURY = 'F7jxXcCRPM9LuswschkSyC5hhvL454NsyjKa5piiKUR8';
+    const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+    const AMOUNT = '0.01';
+
+    // Try Phantom wallet first
+    const provider = window.phantom?.solana || window.solana;
+    if (provider && provider.isPhantom) {
+      try {
+        const resp = await provider.connect();
+        const fromPubkey = resp.publicKey;
+
+        // Load Solana web3 from CDN
+        if (!window._solLoaded) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js';
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+          // Also load SPL token
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/@solana/spl-token@0.4.9/lib/cjs/index.js';
+            s.onload = resolve;
+            s.onerror = () => resolve(); // SPL token might not load as IIFE, that's ok
+            document.head.appendChild(s);
+          });
+          window._solLoaded = true;
+        }
+
+        const { Connection, PublicKey, Transaction, SystemProgram } = solanaWeb3;
+        const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        const recipientKey = new PublicKey(SOLANA_TREASURY);
+        const usdcMint = new PublicKey(USDC_MINT);
+
+        // Get associated token accounts
+        const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+        const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
+        function getATA(owner, mint) {
+          return PublicKey.findProgramAddressSync(
+            [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+            ASSOCIATED_TOKEN_PROGRAM_ID
+          )[0];
+        }
+
+        const fromATA = getATA(fromPubkey, usdcMint);
+        const toATA = getATA(recipientKey, usdcMint);
+
+        // Check if recipient ATA exists
+        const toATAInfo = await connection.getAccountInfo(toATA);
+
+        const transaction = new Transaction();
+
+        // Create recipient ATA if needed
+        if (!toATAInfo) {
+          const createATAIx = {
+            keys: [
+              {pubkey: fromPubkey, isSigner: true, isWritable: true},
+              {pubkey: toATA, isSigner: false, isWritable: true},
+              {pubkey: recipientKey, isSigner: false, isWritable: false},
+              {pubkey: usdcMint, isSigner: false, isWritable: false},
+              {pubkey: SystemProgram.programId, isSigner: false, isWritable: false},
+              {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
+            ],
+            programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+            data: Buffer.from([]),
+          };
+          transaction.add(createATAIx);
+        }
+
+        // SPL Token transfer instruction (10000 = $0.01 USDC with 6 decimals)
+        const transferData = Buffer.alloc(9);
+        transferData[0] = 3; // Transfer instruction
+        transferData.writeBigUInt64LE(BigInt(10000), 1);
+
+        const transferIx = {
+          keys: [
+            {pubkey: fromATA, isSigner: false, isWritable: true},
+            {pubkey: toATA, isSigner: false, isWritable: true},
+            {pubkey: fromPubkey, isSigner: true, isWritable: false},
+          ],
+          programId: TOKEN_PROGRAM_ID,
+          data: transferData,
+        };
+        transaction.add(transferIx);
+
+        transaction.feePayer = fromPubkey;
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+
+        const signed = await provider.signTransaction(transaction);
+        const sig = await connection.sendRawTransaction(signed.serialize());
+        await connection.confirmTransaction(sig, 'confirmed');
+
+        document.getElementById('payPreview').style.display = 'none';
+        document.getElementById('payButtons').style.display = 'none';
+        document.getElementById('paySuccess').style.display = 'block';
+        return;
+      } catch(e) {
+        alert('Solana payment failed: ' + (e.message || e));
+        return;
+      }
+    } else {
+      // No Phantom — show Solana Pay QR / manual instructions
+      alert('Please install Phantom wallet (phantom.app) to pay with Solana USDC.\n\nOr send 0.01 USDC (SPL) manually to:\n' + SOLANA_TREASURY);
       return;
     }
   }
