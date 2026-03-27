@@ -212,8 +212,8 @@ footer a{color:var(--cyan-dim)}
   <div class="pricing-row">
     <div class="price-opt featured">
       <div class="price-amt">$0.01 <small>USDC</small></div>
-      <div class="price-via">Pay with crypto (Base L2)</div>
-      <div class="price-note">~$0.0003 network fee</div>
+      <div class="price-via">Pay with crypto</div>
+      <div class="price-note">Base L2 or Solana · ~$0.001 fee</div>
     </div>
     <div class="price-opt">
       <div class="price-amt">$0.50 <small>USD</small></div>
@@ -319,7 +319,8 @@ footer a{color:var(--cyan-dim)}
     <div class="pay-field"><div class="pay-label">Preview</div><div class="pay-value" id="payBody" style="color:var(--muted)">Hey, just wanted to follow up on our conversation about...</div></div>
   </div>
   <div class="pay-buttons" id="payButtons">
-    <button class="pay-btn pay-crypto" onclick="payCrypto()">💎 Pay $0.01 with USDC (Base)</button>
+    <button class="pay-btn pay-crypto" onclick="payCrypto('base')">💎 Pay $0.01 USDC on Base</button>
+    <button class="pay-btn pay-crypto" onclick="payCrypto('solana')" style="background:linear-gradient(135deg,#9945FF,#14F195);margin-top:8px">◎ Pay $0.01 USDC on Solana</button>
     <div class="pay-or">— or —</div>
     <a href="https://buy.stripe.com/bJe7sKfH87XScsCgfB7AI00" target="_blank" class="pay-btn pay-card-btn">💳 Pay $0.50 with Card</a>
   </div>
@@ -445,7 +446,29 @@ function addWhitelist() {
   input.value = '';
 }
 
-async function payCrypto() {
+async function payCrypto(chain) {
+  if (chain === 'solana') {
+    // Solana payment via Phantom/Solflare
+    if (!window.solana || !window.solana.isPhantom) {
+      alert('Please install Phantom wallet (phantom.app) to pay with Solana.');
+      return;
+    }
+    try {
+      await window.solana.connect();
+      // For Solana USDC SPL transfer, we need @solana/web3.js
+      // Simplified: open a Solana Pay URL
+      const recipient = window._payWallet || '0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3';
+      // TODO: Implement full SPL token transfer
+      // For now, show instructions
+      alert('Solana payments coming soon! For now, send 0.01 USDC (SPL) on Solana to the recipient wallet shown on this page. Then contact us to confirm delivery.');
+      return;
+    } catch(e) {
+      alert('Solana payment failed: ' + (e.message || e));
+      return;
+    }
+  }
+
+  // Base EVM payment
   if (typeof window.ethereum === 'undefined') {
     alert('Please install a wallet (MetaMask, Coinbase Wallet, etc.) to pay with crypto.');
     return;
@@ -454,7 +477,6 @@ async function payCrypto() {
     const accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
     const chainId = await window.ethereum.request({method: 'eth_chainId'});
 
-    // Check if on Base (0x2105 = 8453)
     if (chainId !== '0x2105') {
       try {
         await window.ethereum.request({
@@ -470,11 +492,8 @@ async function payCrypto() {
     }
 
     const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-    const EMAIL35_CONTRACT = '0x7a65f12883706c49752f11db89e519cd988ac34e';
-    const RECIPIENT = '0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3';
-    const AMOUNT = '0x2710'; // 10000 = $0.01 USDC (6 decimals)
+    const RECIPIENT = window._payWallet || '0xDf2FD1fBA88BCC38Edee237a069A880FD4997Bc3';
 
-    // ERC-20 transfer(address,uint256)
     const data = '0xa9059cbb' +
       RECIPIENT.slice(2).padStart(64, '0') +
       (10000).toString(16).padStart(64, '0');
